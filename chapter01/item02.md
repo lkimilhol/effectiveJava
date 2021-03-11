@@ -137,5 +137,79 @@ p.setFavoriteColor("red");
 
 일관성이 깨진 객체가 만들어지면 버그를 심은 코드와 그 버그 때문에 런타임에 문제를 겪는 코드의 디버깅도 어렵다. 또한 **클래스를 불변으로 만들 수 없으며** 스레드 안정성을 얻으려면 추가 작업을 해줘야 한다.
 
+### 빌더 패턴
 
+빌더 패턴은 점층적 생성자 패턴과 자바 빈즈 패턴의 장점만 취했다.
 
+```
+public class Main{
+    public static void main(String [] args) {
+        PersonInfo p = new PersonInfo.Builder("lkimilhol", 18)
+                .favoriteColor("red")
+                .favoriteAnimal("cat")
+                .favoriteNumber(15)
+                .build();
+    }
+}
+
+class PersonInfo {
+    private final String name;
+    private final Integer age;
+    private final String favoriteColor;
+    private final String favoriteAnimal;
+    private final Integer favoriteNumber;
+    
+    static class Builder {
+        private final String name;
+        private final Integer age;
+        
+        private String favoriteColor = "blue";
+        private String favoriteAnimal = "cat";
+        private Integer favoriteNumber = 15;
+        
+        public Builder(String name, Integer age) {
+            this.name = name;
+            this.age = age;
+        }
+        
+        public Builder favoriteColor(String color) {
+            favoriteColor = color;
+            return this;
+        }
+
+        public Builder favoriteAnimal(String animal) {
+            favoriteAnimal = animal;
+            return this;
+        }
+
+        public Builder favoriteNumber(Integer number) {
+            favoriteNumber = number;
+            return this;
+        }
+
+        public PersonInfo build() {
+            return new PersonInfo(this);
+        }
+    }
+
+    private PersonInfo(Builder builder) {
+        name = builder.name;
+        age = builder.age;
+        favoriteColor = builder.favoriteColor;
+        favoriteAnimal = builder.favoriteAnimal;
+        favoriteNumber = builder.favoriteNumber;
+    }
+}
+```
+
+빌더 패턴으로 구현한 클래스이다. build 메서드가 호출하는 생성자에서 해당 값의 유효성을 검사하도록 하자.
+
+빌더 패턴은 계층적으로 설계된 클래스와 함께 쓰기에 좋다. 추상 클래스에는 추상 빌더를, 구체 클래스에는 구체 빌더를 갖게 하면 된다.
+
+빌더 패턴은 상당히 유연하다. 빌더 하나로 여러 객체를 순회하면서 만들 수 있고, 빌더에 넘기는 매개변수에 따라 다른 객체를 만들 수도 있다.
+
+빌더 패턴에도 단점은 존재하는데, 객체를 만들려면 그에 앞서 빌더부터 만들어야 한다. 빌더 생성 비용이 크지는 않지만 성능에 민감한 상황에서는 문제가 될 수 있다. 또한 점층적 생성자 패턴보다는 코드가 장황해서 매개변수가 4개 이상은 되어야 값어치를 한다.
+
+생성자나 정적 팩터리 방식으로 시작했다가 나중에 빌더 패턴으로 전환할 수도 있지만 애초에 빌더로 시작하는 편이 나을 때가 많다.
+
+>생성자나 정적 팩터리가 처리해야 할 매개변수가 많다면 빌더 패턴을 선택하는게 더 낫다.
